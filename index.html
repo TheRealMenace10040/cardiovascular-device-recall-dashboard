@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cardiovascular Medical Device Recalls — openFDA Analysis</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1" integrity="sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ" crossorigin="anonymous"></script>
+<style>
+:root{
+  --bg-primary:#f4f6f8;
+  --bg-card:#ffffff;
+  --bg-header:#132043;
+  --text-primary:#1c2536;
+  --text-secondary:#64748b;
+  --text-on-dark:#ffffff;
+  --c-design:#4C72B0;
+  --c-mfg:#DD8452;
+  --c-human:#C44E52;
+  --c-other:#8172B3;
+  --c1:#2f6fed; --c2:#e08a3c; --c3:#3aa876; --c4:#c0455b; --c5:#7d5fbf; --c6:#3aa0b3; --c7:#a3a83c; --c8:#8a6d4b;
+  --positive:#1f9d55;
+  --warn:#c0392b;
+  --radius:10px;
+  --gap:16px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg-primary);color:var(--text-primary);line-height:1.5;}
+.dashboard-container{max-width:1360px;margin:0 auto;padding:var(--gap);}
+.dashboard-header{background:linear-gradient(135deg,var(--bg-header),#1f3160);color:var(--text-on-dark);padding:24px 28px;border-radius:var(--radius);margin-bottom:var(--gap);}
+.dashboard-header h1{font-size:22px;font-weight:700;margin-bottom:6px;}
+.dashboard-header p{font-size:13.5px;color:rgba(255,255,255,0.75);max-width:820px;}
+.badge{display:inline-block;margin-top:10px;padding:4px 10px;border-radius:20px;background:rgba(255,255,255,0.12);font-size:11.5px;letter-spacing:.3px;color:#cfe0ff;}
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--gap);margin-bottom:var(--gap);}
+.kpi-card{background:var(--bg-card);border-radius:var(--radius);padding:20px 22px;box-shadow:0 1px 3px rgba(0,0,0,.07);border-left:4px solid var(--c1);}
+.kpi-card.warn{border-left-color:var(--warn);}
+.kpi-label{font-size:12px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;}
+.kpi-value{font-size:27px;font-weight:700;}
+.kpi-sub{font-size:12.5px;color:var(--text-secondary);margin-top:4px;}
+.chart-row{display:grid;grid-template-columns:1.1fr 1fr;gap:var(--gap);margin-bottom:var(--gap);}
+.chart-container{background:var(--bg-card);border-radius:var(--radius);padding:20px 22px;box-shadow:0 1px 3px rgba(0,0,0,.07);}
+.chart-container h3{font-size:14px;font-weight:600;margin-bottom:4px;}
+.chart-container .sub{font-size:12px;color:var(--text-secondary);margin-bottom:14px;}
+.chart-container canvas{max-height:300px;}
+.insight-box{background:#eef4ff;border:1px solid #d6e4ff;border-radius:8px;padding:14px 16px;font-size:13px;color:#1c2536;margin-top:14px;}
+.insight-box b{color:#132043;}
+.table-section{background:var(--bg-card);border-radius:var(--radius);padding:20px 22px;box-shadow:0 1px 3px rgba(0,0,0,.07);overflow-x:auto;margin-bottom:var(--gap);}
+.table-section h3{font-size:14px;font-weight:600;margin-bottom:14px;}
+.data-table{width:100%;border-collapse:collapse;font-size:13px;}
+.data-table thead th{text-align:left;padding:9px 12px;border-bottom:2px solid #e2e8f0;color:var(--text-secondary);font-weight:600;font-size:11.5px;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap;cursor:pointer;user-select:none;}
+.data-table thead th:hover{color:var(--text-primary);background:#f8fafc;}
+.data-table tbody td{padding:9px 12px;border-bottom:1px solid #f0f2f5;}
+.data-table tbody tr:hover{background:#f8fafc;}
+.bar-mini{display:inline-block;height:8px;background:var(--c1);border-radius:4px;vertical-align:middle;margin-left:8px;}
+.methodology{background:var(--bg-card);border-radius:var(--radius);padding:22px 24px;box-shadow:0 1px 3px rgba(0,0,0,.07);font-size:13.3px;color:var(--text-primary);}
+.methodology h3{font-size:14px;margin-bottom:10px;}
+.methodology ul{margin:8px 0 8px 20px;}
+.methodology li{margin-bottom:5px;}
+.methodology code{background:#f1f5f9;padding:1px 6px;border-radius:4px;font-size:12px;}
+.dashboard-footer{text-align:center;font-size:12px;color:var(--text-secondary);padding:18px 0 6px;}
+@media (max-width:900px){.chart-row{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="dashboard-container">
+
+  <header class="dashboard-header">
+    <h1>Cardiovascular Medical Device Recalls</h1>
+    <p>Root-cause and risk-classification analysis of FDA medical device recalls in the Cardiovascular specialty, built from the openFDA Device Recall API. Framed the way a Quality/Regulatory analyst would triage recall trends.</p>
+    <span class="badge">Live data pulled from api.fda.gov — Aug 14, 2026</span>
+  </header>
+
+  <section class="kpi-row">
+    <div class="kpi-card">
+      <div class="kpi-label">Total Recalls Analyzed</div>
+      <div class="kpi-value">6,815</div>
+      <div class="kpi-sub">All-time, Cardiovascular device specialty</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Class II (Moderate Risk)</div>
+      <div class="kpi-value">92.3%</div>
+      <div class="kpi-sub">6,289 of 6,815 recalls</div>
+    </div>
+    <div class="kpi-card warn">
+      <div class="kpi-label">Class III (High Risk)</div>
+      <div class="kpi-value">6.7%</div>
+      <div class="kpi-sub">455 of 6,815 recalls</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Leading Root-Cause Group</div>
+      <div class="kpi-value">Manufacturing</div>
+      <div class="kpi-sub">37.3% of categorized recalls</div>
+    </div>
+  </section>
+
+  <section class="chart-row">
+    <div class="chart-container">
+      <h3>Root Causes — Top 15 (raw FDA categories)</h3>
+      <div class="sub">Count of cardiovascular device recalls by reported root cause</div>
+      <canvas id="rootCauseChart"></canvas>
+    </div>
+    <div class="chart-container">
+      <h3>Device Risk Class</h3>
+      <div class="sub">FDA device classification of recalled products</div>
+      <canvas id="classChart"></canvas>
+      <div class="insight-box">Class II devices dominate recalls — consistent with cardiovascular devices skewing toward moderate-risk categories (catheters, stents, monitors) rather than the smaller pool of Class III implantables.</div>
+    </div>
+  </section>
+
+  <section class="chart-row">
+    <div class="chart-container">
+      <h3>Root Causes Recoded into Categories</h3>
+      <div class="sub">The 15 raw FDA root-cause labels grouped into four analyst-defined buckets</div>
+      <canvas id="groupChart"></canvas>
+    </div>
+    <div class="chart-container">
+      <h3>What this tells a Quality team</h3>
+      <div class="sub" style="margin-bottom:10px;">Reading the recoded breakdown</div>
+      <div class="insight-box"><b>Manufacturing/Process issues (37.3%)</b> — process control, nonconforming material, packaging, equipment maintenance — edge out <b>Design issues (32.8%)</b> as the single largest driver of recalls. That's the inverse of what many assume ("recalls are mostly design flaws") and would point a CAPA program toward tightening process controls and incoming material inspection first.</div>
+      <div class="insight-box"><b>Human/Investigation (12.2%)</b> includes cases still under investigation by the firm at time of report — a leading indicator worth tracking separately, since root cause hasn't been finalized yet.</div>
+    </div>
+  </section>
+
+  <section class="table-section">
+    <h3>Root Cause Detail (click a column to sort)</h3>
+    <table class="data-table" id="detailTable">
+      <thead>
+        <tr>
+          <th data-key="cause">Root Cause</th>
+          <th data-key="group">Category</th>
+          <th data-key="count">Recalls</th>
+          <th data-key="pct">% of Top-15</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <section class="methodology">
+    <h3>Data &amp; methodology</h3>
+    <ul>
+      <li><b>Source:</b> <code>api.fda.gov/device/recall.json</code>, filtered to <code>openfda.medical_specialty_description:"Cardiovascular"</code>, pulled live on Aug 14, 2026.</li>
+      <li><b>What's real vs. derived:</b> the root-cause counts (top 15) and device-class counts (Class I/II/III) are exact live aggregation results from the API. The four category buckets (Design / Manufacturing / Human / Other) are my own recode of those 15 real labels — a common analyst move to make a long tail of raw categories decision-ready.</li>
+      <li><b>Known limitation:</b> this build environment hit openFDA's shared-IP rate limit before I could also pull a yearly trend line and a top-manufacturer leaderboard. Both are easy additions — <code>openfda_pull.py</code> (sent alongside this dashboard) is a ready-to-run script that pulls those plus MAUDE adverse-event data; run it locally and drop the output into the <code>DATA</code> block in this file to extend the dashboard.</li>
+      <li><b>Disclaimer:</b> openFDA data is unvalidated and should not be used for clinical decisions — see <a href="https://open.fda.gov/terms/" target="_blank" rel="noopener">FDA terms</a>.</li>
+    </ul>
+  </section>
+
+  <footer class="dashboard-footer">Built as a portfolio project · openFDA public data · Data as of Aug 14, 2026</footer>
+</div>
+
+<script>
+const ROOT_CAUSES = [
+  {cause:"Other", count:1057, group:"Other/Unclassified"},
+  {cause:"Process control", count:900, group:"Manufacturing/Process"},
+  {cause:"Device Design", count:895, group:"Design"},
+  {cause:"Nonconforming Material/Component", count:668, group:"Manufacturing/Process"},
+  {cause:"Under Investigation by firm", count:610, group:"Human/Investigation"},
+  {cause:"Component design/selection", count:366, group:"Design"},
+  {cause:"Software design", count:342, group:"Design"},
+  {cause:"Packaging process control", count:198, group:"Manufacturing/Process"},
+  {cause:"Process change control", count:184, group:"Manufacturing/Process"},
+  {cause:"Process design", count:163, group:"Design"},
+  {cause:"Packaging", count:136, group:"Manufacturing/Process"},
+  {cause:"Equipment maintenance", count:135, group:"Manufacturing/Process"},
+  {cause:"Employee error", count:117, group:"Human/Investigation"},
+  {cause:"Labeling design", count:105, group:"Design"},
+  {cause:"Package design/selection", count:84, group:"Design"},
+];
+const DEVICE_CLASS = [
+  {label:"Class I (Low Risk)", count:71},
+  {label:"Class II (Moderate Risk)", count:6289},
+  {label:"Class III (High Risk)", count:455},
+];
+
+const GROUP_COLORS = {
+  "Design":"#4C72B0",
+  "Manufacturing/Process":"#DD8452",
+  "Human/Investigation":"#C44E52",
+  "Other/Unclassified":"#8172B3"
+};
+
+function fmt(n){ return n.toLocaleString(); }
+
+// --- Root cause horizontal bar ---
+new Chart(document.getElementById('rootCauseChart'), {
+  type:'bar',
+  data:{
+    labels: ROOT_CAUSES.map(r=>r.cause),
+    datasets:[{
+      data: ROOT_CAUSES.map(r=>r.count),
+      backgroundColor: ROOT_CAUSES.map(r=>GROUP_COLORS[r.group]+'CC'),
+      borderColor: ROOT_CAUSES.map(r=>GROUP_COLORS[r.group]),
+      borderWidth:1, borderRadius:4
+    }]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false, indexAxis:'y',
+    plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>fmt(c.parsed.x)+' recalls'}}},
+    scales:{x:{beginAtZero:true, ticks:{callback:v=>fmt(v)}}, y:{ticks:{font:{size:11}}}}
+  }
+});
+
+// --- Device class doughnut ---
+new Chart(document.getElementById('classChart'), {
+  type:'doughnut',
+  data:{
+    labels: DEVICE_CLASS.map(d=>d.label),
+    datasets:[{
+      data: DEVICE_CLASS.map(d=>d.count),
+      backgroundColor:['#3aa876CC','#2f6fedCC','#c0455bCC'],
+      borderColor:'#ffffff', borderWidth:2
+    }]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false, cutout:'62%',
+    plugins:{
+      legend:{position:'bottom', labels:{usePointStyle:true, padding:14, font:{size:11}}},
+      tooltip:{callbacks:{label:c=>{
+        const total = c.dataset.data.reduce((a,b)=>a+b,0);
+        const pct = ((c.parsed/total)*100).toFixed(1);
+        return `${c.label}: ${fmt(c.parsed)} (${pct}%)`;
+      }}}
+    }
+  }
+});
+
+// --- Grouped category chart ---
+const groupTotals = {};
+ROOT_CAUSES.forEach(r=>{ groupTotals[r.group] = (groupTotals[r.group]||0) + r.count; });
+const groupLabels = Object.keys(groupTotals);
+new Chart(document.getElementById('groupChart'), {
+  type:'bar',
+  data:{
+    labels: groupLabels,
+    datasets:[{
+      data: groupLabels.map(g=>groupTotals[g]),
+      backgroundColor: groupLabels.map(g=>GROUP_COLORS[g]+'CC'),
+      borderColor: groupLabels.map(g=>GROUP_COLORS[g]),
+      borderWidth:1, borderRadius:4
+    }]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>{
+      const total = groupLabels.reduce((a,g)=>a+groupTotals[g],0);
+      const pct = ((c.parsed.y/total)*100).toFixed(1);
+      return `${fmt(c.parsed.y)} recalls (${pct}%)`;
+    }}}},
+    scales:{x:{grid:{display:false}}, y:{beginAtZero:true, ticks:{callback:v=>fmt(v)}}}
+  }
+});
+
+// --- Detail table ---
+const topTotal = ROOT_CAUSES.reduce((a,r)=>a+r.count,0);
+let tableData = ROOT_CAUSES.map(r=>({cause:r.cause, group:r.group, count:r.count, pct:(r.count/topTotal*100)}));
+const tbody = document.querySelector('#detailTable tbody');
+let sortKey='count', sortDir='desc';
+function renderTable(){
+  const sorted=[...tableData].sort((a,b)=>{
+    const av=a[sortKey], bv=b[sortKey];
+    const cmp = typeof av==='string' ? av.localeCompare(bv) : av-bv;
+    return sortDir==='asc'?cmp:-cmp;
+  });
+  tbody.innerHTML = sorted.map(r=>`<tr>
+    <td>${r.cause}</td>
+    <td>${r.group}</td>
+    <td>${fmt(r.count)}<span class="bar-mini" style="width:${Math.max(4,r.pct*2.2)}px;background:${GROUP_COLORS[r.group]}"></span></td>
+    <td>${r.pct.toFixed(1)}%</td>
+  </tr>`).join('');
+}
+document.querySelectorAll('#detailTable thead th').forEach(th=>{
+  th.addEventListener('click', ()=>{
+    const key = th.dataset.key;
+    if(sortKey===key){ sortDir = sortDir==='asc'?'desc':'asc'; } else { sortKey=key; sortDir='desc'; }
+    renderTable();
+  });
+});
+renderTable();
+</script>
+</body>
+</html>
