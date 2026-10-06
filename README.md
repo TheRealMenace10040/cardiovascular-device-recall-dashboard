@@ -1,28 +1,29 @@
-# Cardiovascular Medical Device Recalls — Portfolio Case Study
+# Cardiovascular Medical Device Recalls
 
-## Problem
-Recruiters see dozens of near-identical portfolio projects built on the same Kaggle datasets (Titanic, superstore sales). I wanted a project that used **real, public, industry-relevant data** and applied the way of thinking I use daily as a Quality Microbiology Lab Technician — root-cause categorization, risk classification, CAPA-style trend analysis — to a dataset a medtech employer would actually recognize.
+**Live dashboard:** https://therealmenace10040.github.io/cardiovascular-device-recall-dashboard/
 
-## Data & Approach
-- **Source:** [openFDA Device Recall API](https://open.fda.gov/apis/device/recall/) — the FDA's public enforcement report data, filtered to the Cardiovascular device specialty.
-- **Method:** Queried the API for (1) the top 15 reported root causes of recalls and (2) the FDA risk classification (Class I/II/III) of recalled devices — both pulled live on Aug 14, 2026.
-- **Analysis layer:** Recoded the 15 raw FDA root-cause labels into four analyst-defined groups — Design, Manufacturing/Process, Human/Investigation, Other/Unclassified — the same kind of categorization work used when triaging CAPA root causes in a quality system.
+## Why this project
+Most portfolio projects reuse the same Kaggle datasets. I wanted public data a medtech employer would recognize, analyzed the way I already work as a Quality Microbiology Lab Technician: sorting root causes, looking at risk class, and asking what a CAPA program should do next.
 
-## Key Findings
-- **6,815** cardiovascular device recalls on record; **92.3%** are Class II (moderate risk), consistent with cardiovascular recalls skewing toward catheters, monitors, and stents rather than the smaller pool of Class III implantables.
-- After recoding, **Manufacturing/Process issues (37.3%)** are the single largest driver of recalls — edging out **Design issues (32.8%)**. That cuts against the common assumption that recalls are mostly design flaws.
-- **12.2%** of categorized recalls were still "Under Investigation by firm" at time of report — a leading indicator worth tracking separately since root cause isn't finalized yet.
+## Data and approach
+- **Source:** the [openFDA Device Recall API](https://open.fda.gov/apis/device/recall/), filtered to the Cardiovascular device specialty.
+- **Queries:** the 15 most common reported root causes, and the FDA risk class (I, II, III) of recalled devices. Both pulled on Aug 14, 2026.
+- **Analysis:** I grouped the 15 FDA root-cause labels into four categories (Design, Manufacturing / process, Human / under investigation, Other), the same kind of grouping used when triaging CAPA root causes.
 
-## Recommendation (framed as I would for a quality team)
-If this were a live internal dataset, the process-control skew would point toward auditing incoming-material inspection and in-process controls before investing further in design-verification activities — the opposite of where teams often default their CAPA budget.
+## Findings
+- There are **6,815** cardiovascular device recalls on record. **92.3%** are Class II (moderate risk), which fits a specialty dominated by catheters, monitors and stents rather than Class III implantables.
+- **Manufacturing and process issues (37.3%)** are the largest driver, ahead of **design issues (32.8%)**. Most people assume the opposite.
+- **12.2%** are human error or were still under investigation by the firm when reported. That group is worth tracking separately because the final root cause isn't settled yet.
 
-## Engineering note (honesty about the build)
-This dashboard was built inside a sandboxed cloud environment with restricted network access. I got two solid live pulls before hitting openFDA's shared-IP rate limit, so the dashboard ships with those two real breakdowns plus the derived recode. I included `openfda_pull.py`, a working, retry-aware script that pulls the remaining cuts (yearly trend, top recalling firms, MAUDE adverse-event types) — meant to be run on a normal connection and merged into the dashboard. I'd rather ship something honest about its scope than backfill it with fabricated numbers.
+## Recommendation
+If this were internal data, the process-control share would point a quality team toward incoming material inspection and in-process controls before spending more on design verification.
 
-## Tools used
-openFDA REST API, Python (requests, retry/backoff logic), HTML/CSS/JS, Chart.js.
+## Limits
+The API's rate limit stopped the pull after the two breakdowns above, so there is no yearly trend or top-manufacturer view yet. `openfda_pull.py` pulls both, plus MAUDE adverse-event types, with retry and backoff. I left those views out rather than fill them with made-up numbers.
 
 ## Files
-- `cardiovascular_device_recall_dashboard.html` — the dashboard (open directly in a browser, no install needed)
-- `openfda_pull.py` — extension script for yearly trend / top firms / adverse events
-- This README as the case-study writeup for a portfolio site or GitHub repo
+- `index.html`: the dashboard. Opens in any browser with nothing to install.
+- `openfda_pull.py`: script for the yearly trend, top recalling firms and adverse-event types.
+
+## Tools
+openFDA REST API, Python (requests, retry/backoff), HTML/CSS/JavaScript, Chart.js.
